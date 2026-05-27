@@ -1,1 +1,0 @@
-"# locally-shopify-sync" 

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Locally × Shopify Sync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #13131a;
+      --border:    #1e1e2e;
+      --accent:    #7c6dfa;
+      --accent2:   #38d9a9;
+      --accent3:   #f59e0b;
+      --text:      #e8e8f0;
+      --muted:     #6b6b80;
+      --danger:    #f87171;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── GRID BACKGROUND ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,109,250,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,109,250,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── GLOW ── */
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-orb.one { width: 500px; height: 500px; background: rgba(124,109,250,0.12); top: -100px; left: -100px; }
+    .glow-orb.two { width: 400px; height: 400px; background: rgba(56,217,169,0.08); bottom: 0; right: -100px; }
+
+    /* ── LAYOUT ── */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 48px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 16px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 64px 0 48px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 560px;
+      margin-bottom: 40px;
+    }
+
+    /* ── FLOW DIAGRAM ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 64px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .flow-node {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      min-width: 140px;
+      text-align: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .flow-node:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+    .flow-node .icon { font-size: 24px; margin-bottom: 8px; }
+    .flow-node .label {
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .flow-node .name {
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 4px;
+    }
+
+    .flow-arrow {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      color: var(--accent);
+      font-size: 18px;
+    }
+
+    /* ── TAG RULES ── */
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .rules-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .rule-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .rule-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .rule-card.claimed::before { background: linear-gradient(90deg, var(--accent), transparent); }
+    .rule-card.live::before    { background: linear-gradient(90deg, var(--accent2), transparent); }
+    .rule-card:hover { border-color: var(--accent); }
+
+    .rule-condition {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .rule-condition strong { color: var(--accent3); }
+
+    .rule-arrow { color: var(--muted); margin: 12px 0; font-size: 18px; }
+
+    .rule-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: 'DM Mono', monospace;
+    }
+    .rule-tag.claimed { background: rgba(124,109,250,0.15); color: var(--accent); border: 1px solid rgba(124,109,250,0.3); }
+    .rule-tag.live    { background: rgba(56,217,169,0.12); color: var(--accent2); border: 1px solid rgba(56,217,169,0.3); }
+
+    /* ── TEST PANEL ── */
+    .test-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 48px;
+    }
+
+    .test-panel h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .test-panel p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 200px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+    input[type="text"]::placeholder { color: var(--muted); }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover { background: #6b5ce0; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--accent2);
+      border: 1px solid var(--accent2);
+    }
+    .btn-secondary:hover { background: rgba(56,217,169,0.1); }
+
+    .result-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      min-height: 80px;
+      display: none;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .result-box.visible { display: block; }
+    .result-box.success { border-color: rgba(56,217,169,0.4); color: var(--accent2); }
+    .result-box.error   { border-color: rgba(248,113,113,0.4); color: var(--danger); }
+    .result-box.loading { color: var(--muted); }
+
+    /* ── ENV CHECKLIST ── */
+    .env-list {
+      list-style: none;
+      margin-bottom: 48px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .env-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+    }
+
+    .env-key {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--accent3);
+      min-width: 220px;
+    }
+
+    .env-desc {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .env-status {
+      margin-left: auto;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+    .env-status.set { background: var(--accent2); box-shadow: 0 0 8px var(--accent2); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: gap;
+    }
+
+    footer p {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--accent2);
+    }
+
+    @media (max-width: 600px) {
+      .rules-grid { grid-template-columns: 1fr; }
+      .flow { gap: 0; }
+      .env-key { min-width: 0; }
+      footer { flex-direction: column; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="glow-orb one"></div>
+<div class="glow-orb two"></div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-badge">
+      <div class="dot"></div>
+      RETROSPEC SYNC ENGINE
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">// Dealer Intelligence Pipeline</div>
+    <h1>Locally <span>×</span> Shopify<br>Sync Dashboard</h1>
+    <p>Automatically syncs dealer status from the Locally API into Shopify B2B Company metafields. Triggered by Shopify Flow on company creation, with a nightly full sweep.</p>
+  </div>
+
+  <!-- FLOW DIAGRAM -->
+  <div class="flow">
+    <div class="flow-node">
+      <div class="icon">🏪</div>
+      <div class="label">Trigger</div>
+      <div class="name">Shopify Flow</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="icon">⚡</div>
+      <div class="label">Function</div>
+      <div class="name">Vercel API</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="icon">📡</div>
+      <div class="label">Source</div>
+      <div class="name">Locally API</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="icon">🏷️</div>
+      <div class="label">Output</div>
+      <div class="name">Metafields</div>
+    </div>
+  </div>
+
+  <!-- TAG RULES -->
+  <div class="section-title">Sync Rules</div>
+  <div class="rules-grid">
+    <div class="rule-card claimed">
+      <div class="rule-condition">
+        IF <strong>store_company_claimed</strong> == "Claimed"
+      </div>
+      <div class="rule-arrow">↓</div>
+      <div class="rule-tag claimed">✓ &nbsp;Locally - Claimed</div>
+      <br><br>
+      <div class="rule-condition" style="margin-bottom:0">Sets <strong>custom.locally_claimed</strong> = true on the Shopify Company</div>
+    </div>
+    <div class="rule-card live">
+      <div class="rule-condition">
+        IF <strong>store_inventory_status</strong> == "live"
+      </div>
+      <div class="rule-arrow">↓</div>
+      <div class="rule-tag live">◉ &nbsp;Locally - Inv. Live</div>
+      <br><br>
+      <div class="rule-condition" style="margin-bottom:0">Sets <strong>custom.locally_inv_live</strong> = true on the Shopify Company</div>
+    </div>
+  </div>
+
+  <!-- TEST PANEL -->
+  <div class="test-panel">
+    <h2>Test Sync</h2>
+    <p>Manually trigger a sync for a specific company to verify the integration is working.</p>
+
+    <div class="input-row">
+      <input type="text" id="companyInput" placeholder="Company name e.g. 951 Bikes" />
+      <input type="text" id="secretInput" placeholder="X-Sync-Secret" />
+      <button class="btn btn-primary" onclick="testSync()">Run Sync</button>
+      <button class="btn btn-secondary" onclick="triggerAll()">Sync All</button>
+    </div>
+
+    <div class="result-box" id="resultBox"></div>
+  </div>
+
+  <!-- ENV CHECKLIST -->
+  <div class="section-title">Environment Variables</div>
+  <ul class="env-list">
+    <li class="env-item">
+      <span class="env-key">LOCALLY_API_URL</span>
+      <span class="env-desc">Full Locally report URL from George</span>
+      <div class="env-status" id="env-locally-url"></div>
+    </li>
+    <li class="env-item">
+      <span class="env-key">LOCALLY_API_TOKEN</span>
+      <span class="env-desc">From locally.com → API & FTP Credentials</span>
+      <div class="env-status" id="env-locally-token"></div>
+    </li>
+    <li class="env-item">
+      <span class="env-key">SHOPIFY_STORE</span>
+      <span class="env-desc">e.g. westridge-outdoors.myshopify.com</span>
+      <div class="env-status" id="env-shopify-store"></div>
+    </li>
+    <li class="env-item">
+      <span class="env-key">SHOPIFY_CLIENT_ID</span>
+      <span class="env-desc">From dev.shopify.com → Locally Sync → Settings</span>
+      <div class="env-status" id="env-client-id"></div>
+    </li>
+    <li class="env-item">
+      <span class="env-key">SHOPIFY_CLIENT_SECRET</span>
+      <span class="env-desc">Click eye icon on dev.shopify.com Settings page</span>
+      <div class="env-status" id="env-client-secret"></div>
+    </li>
+    <li class="env-item">
+      <span class="env-key">SYNC_SECRET</span>
+      <span class="env-desc">Your chosen password — also set in Shopify Flow header</span>
+      <div class="env-status" id="env-sync-secret"></div>
+    </li>
+  </ul>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© Retrospec · Locally × Shopify Sync · v4.0</p>
+    <div class="status-badge">
+      <div class="dot"></div>
+      Nightly sync · 02:00 UTC
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  async function testSync() {
+    const name   = document.getElementById('companyInput').value.trim();
+    const secret = document.getElementById('secretInput').value.trim();
+    const box    = document.getElementById('resultBox');
+
+    if (!name) { showResult('⚠ Enter a company name', 'error'); return; }
+
+    showResult('⟳ Syncing ' + name + '...', 'loading');
+
+    try {
+      const res = await fetch('/api/sync-dealer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Sync-Secret': secret,
+        },
+        body: JSON.stringify({ company_name: name }),
+      });
+      const data = await res.json();
+      showResult(JSON.stringify(data, null, 2), res.ok ? 'success' : 'error');
+    } catch (err) {
+      showResult('✗ ' + err.message, 'error');
+    }
+  }
+
+  async function triggerAll() {
+    const secret = document.getElementById('secretInput').value.trim();
+    const box    = document.getElementById('resultBox');
+    showResult('⟳ Running full sync — this may take a few minutes...', 'loading');
+
+    try {
+      const res = await fetch('/api/sync-all', {
+        headers: { 'Authorization': 'Bearer ' + secret }
+      });
+      const data = await res.json();
+      showResult(JSON.stringify(data, null, 2), res.ok ? 'success' : 'error');
+    } catch (err) {
+      showResult('✗ ' + err.message, 'error');
+    }
+  }
+
+  function showResult(text, type) {
+    const box = document.getElementById('resultBox');
+    box.textContent = text;
+    box.className = 'result-box visible ' + type;
+  }
+
+  // Check env status on load
+  async function checkHealth() {
+    try {
+      const res = await fetch('/api/health');
+      if (!res.ok) return;
+      const data = await res.json();
+      const envMap = {
+        'locally_api_url':      'env-locally-url',
+        'locally_api_token':    'env-locally-token',
+        'shopify_store':        'env-shopify-store',
+        'shopify_client_id':    'env-client-id',
+        'shopify_client_secret':'env-client-secret',
+        'sync_secret':          'env-sync-secret',
+      };
+      for (const [key, id] of Object.entries(envMap)) {
+        const el = document.getElementById(id);
+        if (el && data[key]) el.classList.add('set');
+      }
+    } catch {}
+  }
+  checkHealth();
+</script>
+
+</body>
+</html>
