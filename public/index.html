@@ -10,15 +10,15 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #0a0a0f;
-      --surface:   #13131a;
-      --border:    #1e1e2e;
-      --accent:    #7c6dfa;
-      --accent2:   #38d9a9;
-      --accent3:   #f59e0b;
-      --text:      #e8e8f0;
-      --muted:     #6b6b80;
-      --danger:    #f87171;
+      --bg:        #ffffff;
+      --surface:   #f8f8f8;
+      --border:    #e2e2e2;
+      --accent:    #111111;
+      --accent2:   #111111;
+      --accent3:   #555555;
+      --text:      #111111;
+      --muted:     #888888;
+      --danger:    #cc0000;
     }
 
     html { scroll-behavior: smooth; }
@@ -32,29 +32,19 @@
       overflow-x: hidden;
     }
 
-    /* ── GRID BACKGROUND ── */
+    /* ── SUBTLE DOT GRID ── */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background-image:
-        linear-gradient(rgba(124,109,250,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124,109,250,0.04) 1px, transparent 1px);
-      background-size: 48px 48px;
+      background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1px);
+      background-size: 28px 28px;
       pointer-events: none;
       z-index: 0;
     }
 
-    /* ── GLOW ── */
-    .glow-orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-      z-index: 0;
-    }
-    .glow-orb.one { width: 500px; height: 500px; background: rgba(124,109,250,0.12); top: -100px; left: -100px; }
-    .glow-orb.two { width: 400px; height: 400px; background: rgba(56,217,169,0.08); bottom: 0; right: -100px; }
+    /* glow orbs hidden in light mode */
+    .glow-orb { display: none; }
 
     /* ── LAYOUT ── */
     .container {
@@ -114,9 +104,7 @@
     }
 
     .hero h1 span {
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--accent);
     }
 
     .hero p {
@@ -211,8 +199,8 @@
       top: 0; left: 0; right: 0;
       height: 2px;
     }
-    .rule-card.claimed::before { background: linear-gradient(90deg, var(--accent), transparent); }
-    .rule-card.live::before    { background: linear-gradient(90deg, var(--accent2), transparent); }
+    .rule-card.claimed::before { background: linear-gradient(90deg, #111, transparent); }
+    .rule-card.live::before    { background: linear-gradient(90deg, #888, transparent); }
     .rule-card:hover { border-color: var(--accent); }
 
     .rule-condition {
@@ -235,8 +223,8 @@
       font-weight: 500;
       font-family: 'DM Mono', monospace;
     }
-    .rule-tag.claimed { background: rgba(124,109,250,0.15); color: var(--accent); border: 1px solid rgba(124,109,250,0.3); }
-    .rule-tag.live    { background: rgba(56,217,169,0.12); color: var(--accent2); border: 1px solid rgba(56,217,169,0.3); }
+    .rule-tag.claimed { background: #111; color: #fff; border: 1px solid #111; }
+    .rule-tag.live    { background: #fff; color: #111; border: 1px solid #111; }
 
     /* ── TEST PANEL ── */
     .test-panel {
@@ -297,15 +285,15 @@
       background: var(--accent);
       color: white;
     }
-    .btn-primary:hover { background: #6b5ce0; transform: translateY(-1px); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-primary:hover { background: #333; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
     .btn-secondary {
       background: transparent;
-      color: var(--accent2);
-      border: 1px solid var(--accent2);
+      color: var(--text);
+      border: 1px solid var(--border);
     }
-    .btn-secondary:hover { background: rgba(56,217,169,0.1); }
+    .btn-secondary:hover { background: var(--surface); }
 
     .result-box {
       background: var(--bg);
@@ -321,8 +309,8 @@
       word-break: break-all;
     }
     .result-box.visible { display: block; }
-    .result-box.success { border-color: rgba(56,217,169,0.4); color: var(--accent2); }
-    .result-box.error   { border-color: rgba(248,113,113,0.4); color: var(--danger); }
+    .result-box.success { border-color: #111; color: #111; }
+    .result-box.error   { border-color: #cc0000; color: var(--danger); }
     .result-box.loading { color: var(--muted); }
 
     /* ── ENV CHECKLIST ── */
@@ -362,7 +350,7 @@
       background: var(--border);
       flex-shrink: 0;
     }
-    .env-status.set { background: var(--accent2); box-shadow: 0 0 8px var(--accent2); }
+    .env-status.set { background: #111; box-shadow: none; }
 
     /* ── FOOTER ── */
     footer {
@@ -386,14 +374,265 @@
       gap: 8px;
       font-family: 'DM Mono', monospace;
       font-size: 11px;
-      color: var(--accent2);
+      color: var(--muted);
     }
+
+    /* ── DEALER DATABASE ── */
+    .db-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 48px;
+    }
+
+    .db-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .db-header h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .db-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .db-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-card .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-card .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .stat-card.total  .stat-value { color: var(--text); }
+    .stat-card.match  .stat-value { color: var(--accent2); }
+    .stat-card.miss   .stat-value { color: var(--danger); }
+    .stat-card.rate   .stat-value { color: var(--accent); }
+
+    .db-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .tab-group {
+      display: flex;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      padding: 8px 18px;
+      border-radius: 7px;
+      border: none;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .tab-btn.active {
+      background: #111;
+      color: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    }
+
+    .db-search {
+      flex: 1;
+      min-width: 200px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 14px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .db-search:focus { border-color: var(--accent); }
+    .db-search::placeholder { color: var(--muted); }
+
+    .row-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .db-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .db-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .db-table thead tr {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .db-table th {
+      padding: 12px 16px;
+      text-align: left;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      font-weight: 400;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    .db-table th:hover { color: var(--text); }
+    .db-table th .sort-icon { margin-left: 4px; opacity: 0.4; }
+    .db-table th.sorted .sort-icon { opacity: 1; color: #111; }
+
+    .db-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .db-table tbody tr:last-child { border-bottom: none; }
+    .db-table tbody tr:hover { background: #f4f4f4; }
+
+    .db-table td {
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .db-table td.name-cell { font-size: 13px; max-width: 280px; }
+    .db-table td.name-cell span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .match-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .match-badge.exact      { background: #111; color: #fff; border: 1px solid #111; }
+    .match-badge.normalized { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
+    .match-badge.high       { background: #f0f0f0; color: #555; border: 1px solid #bbb; }
+    .match-badge.low        { background: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
+    .match-badge.none       { background: #f8f8f8; color: var(--muted); border: 1px solid var(--border); }
+
+    .score-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .score-bar {
+      flex: 1;
+      max-width: 80px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    .db-empty {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+    }
+
+    .db-loading {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn-ghost {
+      padding: 9px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: transparent;
+      color: var(--muted);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+    .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
 
     @media (max-width: 600px) {
       .rules-grid { grid-template-columns: 1fr; }
       .flow { gap: 0; }
       .env-key { min-width: 0; }
       footer { flex-direction: column; gap: 16px; }
+      .db-stats { grid-template-columns: repeat(2, 1fr); }
+      .db-controls { flex-direction: column; align-items: stretch; }
     }
   </style>
 </head>
@@ -482,6 +721,55 @@
     </div>
 
     <div class="result-box" id="resultBox"></div>
+  </div>
+
+  <!-- DEALER DATABASE -->
+  <div class="section-title">Dealer Database</div>
+  <div class="db-panel">
+
+    <div class="db-header">
+      <h2>Locally ↔ Shopify Match Report</h2>
+      <div class="db-actions">
+        <button class="btn-ghost" id="exportBtn" onclick="exportCSV()" disabled>Export CSV</button>
+        <button class="btn btn-primary" id="loadDbBtn" onclick="loadDatabase()">Load Database</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="db-stats" id="dbStats" style="display:none">
+      <div class="stat-card total">
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-label">Locally Dealers</div>
+      </div>
+      <div class="stat-card match">
+        <div class="stat-value" id="statMatched">—</div>
+        <div class="stat-label">Matched</div>
+      </div>
+      <div class="stat-card miss">
+        <div class="stat-value" id="statUnmatched">—</div>
+        <div class="stat-label">Unmatched</div>
+      </div>
+      <div class="stat-card rate">
+        <div class="stat-value" id="statRate">—</div>
+        <div class="stat-label">Match Rate</div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="db-controls" id="dbControls" style="display:none">
+      <div class="tab-group">
+        <button class="tab-btn active" id="tabMatched"   onclick="switchTab('matched')">✓ Matched</button>
+        <button class="tab-btn"        id="tabUnmatched" onclick="switchTab('unmatched')">✗ Unmatched</button>
+      </div>
+      <input class="db-search" id="dbSearch" type="text" placeholder="Search by name…" oninput="renderTable()" />
+      <span class="row-count" id="rowCount"></span>
+    </div>
+
+    <!-- TABLE -->
+    <div class="db-table-wrap" id="dbTableWrap">
+      <div class="db-empty" id="dbEmpty">Click "Load Database" to fetch matched and unmatched dealers.</div>
+    </div>
+
   </div>
 
   <!-- ENV CHECKLIST -->
@@ -577,6 +865,208 @@
     box.textContent = text;
     box.className = 'result-box visible ' + type;
   }
+
+  // ── DEALER DATABASE ──────────────────────────────────────────────────────────
+
+  let dbData      = null;   // { summary, matched, unmatched }
+  let activeTab   = 'matched';
+  let sortCol     = null;
+  let sortDir     = 1;
+
+  async function loadDatabase() {
+    const secret = document.getElementById('secretInput').value.trim();
+    const btn    = document.getElementById('loadDbBtn');
+    const wrap   = document.getElementById('dbTableWrap');
+
+    btn.disabled = true;
+    btn.textContent = 'Loading…';
+    wrap.innerHTML = '<div class="db-loading"><span class="spinner"></span>Fetching dealer data — this takes ~20 seconds…</div>';
+    document.getElementById('dbStats').style.display    = 'none';
+    document.getElementById('dbControls').style.display = 'none';
+    document.getElementById('exportBtn').disabled = true;
+
+    try {
+      const res = await fetch('/api/unmatched', {
+        headers: secret ? { 'Authorization': 'Bearer ' + secret } : {}
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error ?? res.statusText);
+      }
+      dbData = await res.json();
+
+      // Stats
+      const s = dbData.summary;
+      document.getElementById('statTotal').textContent     = s.locally_dealers.toLocaleString();
+      document.getElementById('statMatched').textContent   = s.matched.toLocaleString();
+      document.getElementById('statUnmatched').textContent = s.unmatched.toLocaleString();
+      document.getElementById('statRate').textContent      = Math.round(s.matched / s.locally_dealers * 100) + '%';
+      document.getElementById('dbStats').style.display     = 'grid';
+      document.getElementById('dbControls').style.display  = 'flex';
+      document.getElementById('exportBtn').disabled = false;
+
+      sortCol = null;
+      renderTable();
+
+    } catch (err) {
+      wrap.innerHTML = '<div class="db-empty" style="color:var(--danger)">✗ ' + err.message + '</div>';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Refresh';
+    }
+  }
+
+  function switchTab(tab) {
+    activeTab = tab;
+    document.getElementById('tabMatched').classList.toggle('active',   tab === 'matched');
+    document.getElementById('tabUnmatched').classList.toggle('active', tab === 'unmatched');
+    document.getElementById('dbSearch').value = '';
+    sortCol = null; sortDir = 1;
+    renderTable();
+  }
+
+  function renderTable() {
+    if (!dbData) return;
+    const query = (document.getElementById('dbSearch').value ?? '').toLowerCase().trim();
+    const rows  = activeTab === 'matched' ? dbData.matched : dbData.unmatched;
+
+    let filtered = rows.filter(r => {
+      if (!query) return true;
+      const locally = (r.locally ?? '').toLowerCase();
+      const shopify = (r.shopify ?? r.best_shopify_match ?? '').toLowerCase();
+      return locally.includes(query) || shopify.includes(query);
+    });
+
+    if (sortCol !== null) {
+      filtered = [...filtered].sort((a, b) => {
+        let va, vb;
+        if (activeTab === 'matched') {
+          va = sortCol === 0 ? a.locally : a.shopify ?? '';
+          vb = sortCol === 0 ? b.locally : b.shopify ?? '';
+        } else {
+          if (sortCol === 0) { va = a.locally; vb = b.locally; }
+          else if (sortCol === 1) { va = a.best_shopify_match ?? ''; vb = b.best_shopify_match ?? ''; }
+          else { va = a.score ?? 0; vb = b.score ?? 0; }
+        }
+        if (typeof va === 'number') return sortDir * (va - vb);
+        return sortDir * va.localeCompare(vb);
+      });
+    }
+
+    document.getElementById('rowCount').textContent = filtered.length.toLocaleString() + ' rows';
+
+    if (filtered.length === 0) {
+      document.getElementById('dbTableWrap').innerHTML =
+        '<div class="db-empty">No results match your search.</div>';
+      return;
+    }
+
+    const thead = activeTab === 'matched'
+      ? `<tr>
+           <th onclick="sortBy(0)">Locally Name <span class="sort-icon" id="si0">↕</span></th>
+           <th onclick="sortBy(1)">Shopify Company <span class="sort-icon" id="si1">↕</span></th>
+           <th>Match Type</th>
+         </tr>`
+      : `<tr>
+           <th onclick="sortBy(0)">Locally Name <span class="sort-icon" id="si0">↕</span></th>
+           <th onclick="sortBy(1)">Best Shopify Suggestion <span class="sort-icon" id="si1">↕</span></th>
+           <th onclick="sortBy(2)">Score <span class="sort-icon" id="si2">↕</span></th>
+         </tr>`;
+
+    const tbodyRows = filtered.map(r => {
+      if (activeTab === 'matched') {
+        const badge = r.via === 'normalized'
+          ? '<span class="match-badge normalized">≈ normalized</span>'
+          : '<span class="match-badge exact">= exact</span>';
+        return `<tr>
+          <td class="name-cell"><span title="${esc(r.locally)}">${esc(r.locally)}</span></td>
+          <td class="name-cell"><span title="${esc(r.shopify ?? '')}">${esc(r.shopify ?? '—')}</span></td>
+          <td>${badge}</td>
+        </tr>`;
+      } else {
+        const score = r.score ?? 0;
+        const suggestion = r.best_shopify_match ?? null;
+        let badge, barColor;
+        if (!suggestion)       { badge = '<span class="match-badge none">no suggestion</span>'; barColor = '#ccc'; }
+        else if (score >= 80)  { badge = `<span class="match-badge high">≈ ${score}% close</span>`; barColor = '#555'; }
+        else                   { badge = `<span class="match-badge low">~ ${score}%</span>`;         barColor = '#cc0000'; }
+
+        const bar = suggestion
+          ? `<div class="score-bar-wrap">
+               <div class="score-bar"><div class="score-bar-fill" style="width:${score}%;background:${barColor}"></div></div>
+             </div>`
+          : '';
+
+        return `<tr>
+          <td class="name-cell"><span title="${esc(r.locally)}">${esc(r.locally)}</span></td>
+          <td class="name-cell"><span title="${esc(suggestion ?? '')}">${esc(suggestion ?? '—')}</span></td>
+          <td>${badge}${bar}</td>
+        </tr>`;
+      }
+    }).join('');
+
+    document.getElementById('dbTableWrap').innerHTML =
+      `<table class="db-table">
+        <thead>${thead}</thead>
+        <tbody>${tbodyRows}</tbody>
+      </table>`;
+
+    // Re-highlight sorted column
+    if (sortCol !== null) {
+      const th = document.querySelector(`#si${sortCol}`)?.parentElement;
+      if (th) th.classList.add('sorted');
+      const icon = document.getElementById(`si${sortCol}`);
+      if (icon) icon.textContent = sortDir === 1 ? '↑' : '↓';
+    }
+  }
+
+  function sortBy(col) {
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol = col; sortDir = 1; }
+    renderTable();
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function exportCSV() {
+    if (!dbData) return;
+    const rows = activeTab === 'matched' ? dbData.matched : dbData.unmatched;
+    const header = activeTab === 'matched'
+      ? ['Locally Name', 'Shopify Company', 'Match Type']
+      : ['Locally Name', 'Best Shopify Suggestion', 'Score'];
+
+    const lines = [header.join(',')];
+    for (const r of rows) {
+      if (activeTab === 'matched') {
+        lines.push([csvCell(r.locally), csvCell(r.shopify ?? ''), r.via === 'normalized' ? 'normalized' : 'exact'].join(','));
+      } else {
+        lines.push([csvCell(r.locally), csvCell(r.best_shopify_match ?? ''), r.score ?? ''].join(','));
+      }
+    }
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `dealer-${activeTab}-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function csvCell(v) {
+    const s = String(v ?? '');
+    return s.includes(',') || s.includes('"') || s.includes('\n')
+      ? '"' + s.replace(/"/g, '""') + '"'
+      : s;
+  }
+
+  // ── HEALTH CHECK ─────────────────────────────────────────────────────────────
 
   // Check env status on load
   async function checkHealth() {
