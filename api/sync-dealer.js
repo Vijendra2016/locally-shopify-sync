@@ -13,6 +13,10 @@ const SHOPIFY_STORE     = process.env.SHOPIFY_STORE;
 const SYNC_SECRET       = process.env.SYNC_SECRET;
 const API_VER           = "2025-01";
 
+const TAG_CLAIMED  = "Locally - Claimed";
+const TAG_INV_LIVE = "Locally - Inv. Live";
+const LOCALLY_TAGS = [TAG_CLAIMED, TAG_INV_LIVE];
+
 // ─── Locally ─────────────────────────────────────────────────────────────────
 
 async function fetchAllDealers() {
@@ -26,10 +30,13 @@ async function fetchAllDealers() {
   const totalPages = first.properties?.total_pages ?? 1;
   const dealers = [...(first.content ?? [])];
 
+  const pagePromises = [];
   for (let p = 1; p < totalPages; p++) {
-    const page = await fetch(`${baseUrl}/${p}`, { headers }).then(r => r.json());
-    dealers.push(...(page.content ?? []));
+    pagePromises.push(fetch(`${baseUrl}/${p}`, { headers }).then(r => r.json()));
   }
+  const pages = await Promise.all(pagePromises);
+  for (const page of pages) dealers.push(...(page.content ?? []));
+
   return dealers;
 }
 
@@ -56,14 +63,39 @@ async function findCompanyByName(token, name) {
   const data = await shopifyGQL(token,
     `query($q: String!) {
       companies(first: 5, query: $q) {
-        edges { node { id name } }
+        edges {
+          node {
+            id
+            name
+            contacts(first: 20) {
+              edges {
+                node {
+                  isMainContact
+                  customer { id tags email firstName lastName }
+                }
+              }
+            }
+          }
+        }
       }
     }`,
     { q: `name:${name}` }
   );
+
   const match = (data?.companies?.edges ?? [])
     .find(e => e.node.name.toLowerCase() === name.toLowerCase());
-  return match?.node ?? null;
+
+  if (!match) return null;
+
+  const node     = match.node;
+  const contacts = node.contacts?.edges ?? [];
+  const primary  = contacts.find(c => c.node.isMainContact) ?? contacts[0];
+
+  return {
+    id:       node.id,
+    name:     node.name,
+    customer: primary?.node?.customer ?? null,
+  };
 }
 
 async function setMetafields(token, companyId, claimed, invLive) {
@@ -86,6 +118,24 @@ async function setMetafields(token, companyId, claimed, invLive) {
   return data?.metafieldsSet?.metafields;
 }
 
+function computeTags(existingTags, claimed, invLive) {
+  const preserved = (existingTags ?? []).filter(t => !LOCALLY_TAGS.includes(t));
+  if (claimed)  preserved.push(TAG_CLAIMED);
+  if (invLive)  preserved.push(TAG_INV_LIVE);
+  return [...new Set(preserved)].sort();
+}
+
+async function updateCustomerTags(token, customerId, newTags) {
+  await shopifyGQL(token,
+    `mutation($id: ID!, $tags: [String!]!) {
+      customerUpdate(input: { id: $id, tags: $tags }) {
+        userErrors { field message }
+      }
+    }`,
+    { id: customerId, tags: newTags }
+  );
+}
+
 // ─── Handler ──────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -97,30 +147,40 @@ export default async function handler(req, res) {
   if (!company_name) return res.status(400).json({ error: "Missing company_name" });
 
   try {
-    // 1. Get Shopify token automatically
     const shopifyToken = await getShopifyToken();
 
-    // 2. Find dealer in Locally
+    // Find dealer in Locally
     const dealers = await fetchAllDealers();
     const dealer = dealers.find(
       d => (d.store_name ?? "").toLowerCase() === company_name.toLowerCase()
     );
     if (!dealer) return res.status(200).json({ status: "not_found_in_locally", company_name });
 
-    // 3. Check flags
-    const claimed = (dealer.store_company_claimed ?? "").toLowerCase() === "claimed";
-    const invLive = (dealer.store_inventory_status ?? "").toLowerCase() === "live";
+    // Same field names as sync-all.js
+    const claimed = dealer.authorized === "true";
+    const invLive = parseInt(dealer.count_of_brand_upcs_in_stock ?? "0", 10) > 0;
 
-    // 4. Find Shopify company
+    // Find Shopify company + main contact
     const company = await findCompanyByName(shopifyToken, company_name);
     if (!company) return res.status(200).json({ status: "not_found_in_shopify", company_name });
 
-    // 5. Write metafields
+    // Update metafields
     const metafields = await setMetafields(shopifyToken, company.id, claimed, invLive);
 
+    // Update customer tags (add or remove based on current status)
+    let customer_tags_updated = false;
+    if (company.customer) {
+      const newTags = computeTags(company.customer.tags, claimed, invLive);
+      await updateCustomerTags(shopifyToken, company.customer.id, newTags);
+      customer_tags_updated = true;
+    }
+
     return res.status(200).json({
-      status: "updated", company_name,
-      locally_claimed: claimed, locally_inv_live: invLive,
+      status:                "updated",
+      company_name,
+      locally_claimed:       claimed,
+      locally_inv_live:      invLive,
+      customer_tags_updated,
       metafields,
     });
 
