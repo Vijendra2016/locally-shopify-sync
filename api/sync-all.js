@@ -22,7 +22,9 @@ const API_VER           = "2025-01";
 
 const TAG_CLAIMED  = "Locally - Claimed";
 const TAG_INV_LIVE = "Locally - Inv. Live";
-const LOCALLY_TAGS = [TAG_CLAIMED, TAG_INV_LIVE];
+const TAG_ROPIS    = "Ropis - Enabled";
+const TAG_BOPIS    = "Bopis - Enabled";
+const LOCALLY_TAGS = [TAG_CLAIMED, TAG_INV_LIVE, TAG_ROPIS, TAG_BOPIS];
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -152,10 +154,12 @@ async function setCompanyMetafields(token, companyId, claimed, invLive) {
   );
 }
 
-function computeTags(existingTags, claimed, invLive) {
+function computeTags(existingTags, claimed, invLive, ropis, bopis) {
   const preserved = (existingTags ?? []).filter(t => !LOCALLY_TAGS.includes(t));
   if (claimed)  preserved.push(TAG_CLAIMED);
   if (invLive)  preserved.push(TAG_INV_LIVE);
+  if (ropis)    preserved.push(TAG_ROPIS);
+  if (bopis)    preserved.push(TAG_BOPIS);
   return [...new Set(preserved)].sort();
 }
 
@@ -218,6 +222,8 @@ export default async function handler(req, res) {
 
       const claimed = dealer.authorized === "true";
       const invLive = parseInt(dealer.count_of_brand_upcs_in_stock ?? "0", 10) > 0;
+      const ropis   = dealer.ropis === "1";
+      const bopis   = dealer.bopis === "1";
 
       // Queue updates — run in parallel batches of 10
       updatePromises.push(async () => {
@@ -226,7 +232,7 @@ export default async function handler(req, res) {
           stats.companies_updated++;
 
           if (company.customer) {
-            const newTags = computeTags(company.customer.tags, claimed, invLive);
+            const newTags = computeTags(company.customer.tags, claimed, invLive, ropis, bopis);
             await updateCustomerTags(shopifyToken, company.customer.id, newTags);
             stats.customers_updated++;
           }
