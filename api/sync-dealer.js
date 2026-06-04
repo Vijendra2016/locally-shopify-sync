@@ -15,9 +15,9 @@ const API_VER           = "2025-01";
 
 const TAG_CLAIMED  = "Locally - Claimed";
 const TAG_INV_LIVE = "Locally - Inv. Live";
-const TAG_ROPIS    = "Ropis - Enabled";
-const TAG_BOPIS    = "Bopis - Enabled";
-const LOCALLY_TAGS = [TAG_CLAIMED, TAG_INV_LIVE, TAG_ROPIS, TAG_BOPIS];
+const TAG_ROPIS    = "Locally - Ropis - Enabled";
+const TAG_BOPIS    = "Locally - Bopis - Enabled";
+const LOCALLY_TAGS = [TAG_CLAIMED, TAG_INV_LIVE, TAG_ROPIS, TAG_BOPIS, "Ropis - Enabled", "Bopis - Enabled"];
 
 // ─── Locally ─────────────────────────────────────────────────────────────────
 
